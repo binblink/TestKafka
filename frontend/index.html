@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Envoyer un message</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <h1>Envoyer un message</h1>
+    <input v-model="message" placeholder="Tape ton message ici" />
+    <button @click="sendMessage">Envoyer</button>
+    <p v-if="response">{{ response }}</p>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          message: '',
+          response: ''
+        };
+      },
+      methods: {
+        async sendMessage() {
+          if (!this.message) {
+            this.response = 'Veuillez saisir un message.';
+            return;
+          }
+
+          try {
+            const res = await fetch('http://localhost:8000/message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: this.message }),
+            });
+
+            if (!res.ok) {
+              throw new Error(`Erreur: ${res.status}`);
+            }
+
+            const data = await res.json();
+            this.response = `Succés : ${data.status}`;
+            this.message = '';
+          } catch (err) {
+            this.response = `Erreur lors de l'envoi: ${err.message}`;
+          }
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
